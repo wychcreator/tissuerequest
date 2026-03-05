@@ -360,6 +360,9 @@
   <button class="tab-btn" onclick="showTab('stock')" id="tab-stock" style="display:none">
     📦 จัดการสต็อก
   </button>
+  <button class="tab-btn" onclick="showTab('people')" id="tab-people" style="display:none">
+    👥 จัดการรายชื่อ
+  </button>
 </div>
 
 <!-- MAIN -->
@@ -391,7 +394,9 @@
       <div class="form-grid">
         <div class="form-group">
           <label>ชื่อผู้เบิก <span>*</span></label>
-          <input type="text" id="reqName" placeholder="ชื่อ-นามสกุล">
+          <select id="reqName">
+            <option value="">-- เลือกชื่อพนักงาน --</option>
+          </select>
         </div>
         <div class="form-group">
           <label>แผนก <span>*</span></label>
@@ -505,7 +510,12 @@
     </div>
 
     <div class="card">
-      <div class="card-title">📜 ประวัติการอนุมัติทั้งหมด</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <div class="card-title" style="margin-bottom:0;">📜 ประวัติการอนุมัติทั้งหมด</div>
+        <button class="btn btn-success" onclick="exportExcel()" style="background:#1d6f42;">
+          📥 Export Excel
+        </button>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -569,6 +579,51 @@
     </div>
   </div>
 
+  <!-- PAGE: PEOPLE -->
+  <div class="page" id="page-people">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+      <!-- พนักงาน -->
+      <div class="card">
+        <div class="card-title">👤 รายชื่อพนักงาน</div>
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+          <input type="text" id="newEmployeeName" placeholder="ชื่อ-นามสกุลพนักงาน" style="flex:1">
+          <button class="btn btn-primary" onclick="addPerson('employee')">+ เพิ่ม</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>ชื่อพนักงาน</th><th></th></tr>
+            </thead>
+            <tbody id="employeeList">
+              <tr><td colspan="3"><div class="empty"><div class="icon">👤</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ผู้อนุมัติ -->
+      <div class="card">
+        <div class="card-title">✅ รายชื่อผู้อนุมัติ</div>
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+          <input type="text" id="newApproverName" placeholder="ชื่อ-นามสกุลผู้อนุมัติ" style="flex:1">
+          <button class="btn btn-success" onclick="addPerson('approver')">+ เพิ่ม</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>ชื่อผู้อนุมัติ</th><th></th></tr>
+            </thead>
+            <tbody id="approverList">
+              <tr><td colspan="3"><div class="empty"><div class="icon">✅</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </main>
 
 <!-- MODAL: APPROVE/REJECT -->
@@ -601,12 +656,12 @@ import {
 // ===== 🔥 FIREBASE CONFIG =====
 // TODO: แทนที่ด้วย config ของคุณจาก Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyBXR5Jr-2oaM2mrMny5iwhEMS3oQObnCbE",
-  authDomain: "tissue-f32c5.firebaseapp.com",
-  projectId: "tissue-f32c5",
-  storageBucket: "tissue-f32c5.firebasestorage.app",
-  messagingSenderId: "35578569023",
-  appId: "1:35578569023:web:a9fd5c6ff1cdc2ad36338a"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 // =============================
 
@@ -630,6 +685,8 @@ let localRequests = [
 ];
 let localStock = 45;
 let localMaxStock = 100;
+let localEmployees = ['สมชาย ใจดี', 'มาลี รักงาน'];
+let localApprovers = ['วิภา สมใจ'];
 let currentRole = 'employee';
 let currentUser = 'สมชาย ใจดี';
 let pendingAction = null;
@@ -664,6 +721,7 @@ window.showTab = function(tab) {
   if (tab === 'history') renderHistory();
   if (tab === 'stock') renderStock();
   if (tab === 'request') renderStats();
+  if (tab === 'people') renderPeople();
 }
 
 // === ROLE SWITCH ===
@@ -672,12 +730,110 @@ window.switchRole = function(role) {
   document.querySelectorAll('.role-switch button').forEach((b,i) => {
     b.classList.toggle('active', (i===0 && role==='employee') || (i===1 && role==='admin'));
   });
+  // set current user from dropdown if available
+  if (role === 'employee') {
+    const sel = document.getElementById('reqName');
+    currentUser = sel?.value || localEmployees[0] || 'พนักงาน';
+  } else {
+    currentUser = localApprovers[0] || 'ผู้อนุมัติ';
+  }
   document.getElementById('roleTag').textContent = role === 'admin' ? 'ผู้อนุมัติ' : 'พนักงาน';
-  document.getElementById('userName').textContent = role === 'admin' ? 'วิภา สมใจ' : 'สมชาย ใจดี';
-  currentUser = role === 'admin' ? 'วิภา สมใจ' : 'สมชาย ใจดี';
+  document.getElementById('userName').textContent = currentUser;
   document.getElementById('tab-admin').style.display = role === 'admin' ? '' : 'none';
   document.getElementById('tab-stock').style.display = role === 'admin' ? '' : 'none';
+  document.getElementById('tab-people').style.display = role === 'admin' ? '' : 'none';
   showTab('request');
+}
+
+// === GET / SAVE PEOPLE ===
+async function getPeople() {
+  if (useLocal) return { employees: localEmployees, approvers: localApprovers };
+  try {
+    const d = await getDoc(doc(db, 'settings', 'people'));
+    return d.exists() ? d.data() : { employees: [], approvers: [] };
+  } catch { return { employees: [], approvers: [] }; }
+}
+async function savePeople(employees, approvers) {
+  if (useLocal) { localEmployees = employees; localApprovers = approvers; return; }
+  await setDoc(doc(db, 'settings', 'people'), { employees, approvers });
+}
+
+function populateDropdowns(employees, approvers) {
+  // Employee dropdown in request form
+  const sel = document.getElementById('reqName');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">-- เลือกชื่อพนักงาน --</option>';
+  employees.forEach(n => {
+    const o = document.createElement('option');
+    o.value = n; o.textContent = n;
+    if (n === prev) o.selected = true;
+    sel.appendChild(o);
+  });
+  // Approver dropdown in header (role switch)
+  // Update currentUser if role matches
+  if (currentRole === 'employee' && employees.length) {
+    if (!sel.value) sel.value = employees[0];
+    currentUser = sel.value;
+    document.getElementById('userName').textContent = currentUser;
+  }
+  if (currentRole === 'admin' && approvers.length) {
+    currentUser = approvers[0];
+    document.getElementById('userName').textContent = currentUser;
+  }
+}
+
+// === RENDER PEOPLE PAGE ===
+async function renderPeople() {
+  const { employees, approvers } = await getPeople();
+  populateDropdowns(employees, approvers);
+
+  // Employee table
+  const et = document.getElementById('employeeList');
+  et.innerHTML = employees.length ? employees.map((n,i) => `
+    <tr>
+      <td style="color:var(--text-muted);font-weight:700">${i+1}</td>
+      <td>${n}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deletePerson('employee',${i})">ลบ</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="3"><div class="empty"><div class="icon">👤</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
+
+  // Approver table
+  const at = document.getElementById('approverList');
+  at.innerHTML = approvers.length ? approvers.map((n,i) => `
+    <tr>
+      <td style="color:var(--text-muted);font-weight:700">${i+1}</td>
+      <td>${n}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deletePerson('approver',${i})">ลบ</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="3"><div class="empty"><div class="icon">✅</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
+}
+
+window.addPerson = async function(type) {
+  const inputId = type === 'employee' ? 'newEmployeeName' : 'newApproverName';
+  const name = document.getElementById(inputId).value.trim();
+  if (!name) { showToast('กรุณาระบุชื่อ', true); return; }
+
+  const { employees, approvers } = await getPeople();
+  if (type === 'employee') {
+    if (employees.includes(name)) { showToast('มีชื่อนี้อยู่แล้ว', true); return; }
+    employees.push(name);
+  } else {
+    if (approvers.includes(name)) { showToast('มีชื่อนี้อยู่แล้ว', true); return; }
+    approvers.push(name);
+  }
+  await savePeople(employees, approvers);
+  document.getElementById(inputId).value = '';
+  showToast(`เพิ่ม "${name}" เรียบร้อยแล้ว ✅`);
+  renderPeople();
+}
+
+window.deletePerson = async function(type, index) {
+  const { employees, approvers } = await getPeople();
+  if (type === 'employee') employees.splice(index, 1);
+  else approvers.splice(index, 1);
+  await savePeople(employees, approvers);
+  showToast('ลบรายชื่อเรียบร้อยแล้ว');
+  renderPeople();
 }
 
 // === GET REQUESTS ===
@@ -696,8 +852,11 @@ async function getStock() {
 
 // === RENDER STATS ===
 async function renderStats() {
-  const [reqs, stk] = await Promise.all([getRequests(), getStock()]);
-  const mine = reqs.filter(r => r.name === currentUser);
+  const [reqs, stk, people] = await Promise.all([getRequests(), getStock(), getPeople()]);
+  populateDropdowns(people.employees, people.approvers);
+  const sel = document.getElementById('reqName');
+  const myName = sel.value || currentUser;
+  const mine = reqs.filter(r => r.name === myName);
   document.getElementById('statStock').textContent = stk.total;
   document.getElementById('statMyPending').textContent = mine.filter(r=>r.status==='pending').length;
   document.getElementById('statMyApproved').textContent = mine.filter(r=>r.status==='approved').length;
@@ -706,12 +865,13 @@ async function renderStats() {
 
 // === SUBMIT REQUEST ===
 window.submitRequest = async function() {
-  const name = document.getElementById('reqName').value.trim() || currentUser;
+  const name = document.getElementById('reqName').value.trim();
   const dept = document.getElementById('reqDept').value;
   const qty = parseInt(document.getElementById('reqQty').value);
   const purpose = document.getElementById('reqPurpose').value;
   const note = document.getElementById('reqNote').value.trim();
 
+  if (!name) { showToast('กรุณาเลือกชื่อพนักงาน', true); return; }
   if (!dept || !qty || !purpose) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
   if (qty < 1 || qty > 50) { showToast('จำนวนต้องอยู่ระหว่าง 1-50 ม้วน', true); return; }
 
@@ -946,8 +1106,63 @@ async function updatePendingBadge(count) {
   document.getElementById('pendingBadge').style.display = count > 0 ? '' : 'none';
 }
 
+// === EXPORT EXCEL ===
+window.exportExcel = async function() {
+  const reqs = await getRequests();
+  const stk = await getStock();
+
+  if (!reqs.length) { showToast('ยังไม่มีข้อมูลให้ Export', true); return; }
+
+  const statusTh = { pending: 'รออนุมัติ', approved: 'อนุมัติแล้ว', rejected: 'ไม่อนุมัติ' };
+
+  // Build CSV with BOM for Thai support in Excel
+  const BOM = '\uFEFF';
+  const headers = ['#', 'วันที่', 'ชื่อผู้เบิก', 'แผนก', 'จำนวน (ม้วน)', 'วัตถุประสงค์', 'สถานะ', 'เหตุผลที่ไม่อนุมัติ', 'หมายเหตุ'];
+
+  const rows = reqs.map((r, i) => {
+    const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+    const dateStr = d.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    return [
+      i + 1,
+      dateStr,
+      r.name || '',
+      r.dept || '',
+      r.qty || 0,
+      r.purpose || '',
+      statusTh[r.status] || r.status,
+      r.rejectReason || '',
+      r.note || ''
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+  });
+
+  // Summary rows
+  const approved = reqs.filter(r => r.status === 'approved');
+  const totalOut = approved.reduce((s, r) => s + (r.qty || 0), 0);
+  const summaryRows = [
+    '',
+    '"สรุป"',
+    `"สต็อกคงเหลือ","${stk.total} ม้วน"`,
+    `"เบิกออกทั้งหมด","${totalOut} ม้วน"`,
+    `"คำขอทั้งหมด","${reqs.length} รายการ"`,
+    `"รออนุมัติ","${reqs.filter(r=>r.status==='pending').length} รายการ"`,
+    `"อนุมัติแล้ว","${approved.length} รายการ"`,
+    `"ไม่อนุมัติ","${reqs.filter(r=>r.status==='rejected').length} รายการ"`,
+  ];
+
+  const csv = BOM + [headers.map(h=>`"${h}"`).join(','), ...rows, ...summaryRows].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\//g,'-');
+  a.href = url;
+  a.download = `รายงานเบิกกระดาษชำระ_${today}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 Export สำเร็จ! เปิดด้วย Excel ได้เลย');
+}
+
 // === INIT ===
-document.getElementById('reqName').value = currentUser;
 renderStats();
 updatePendingBadge();
 
