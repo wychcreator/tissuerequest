@@ -335,8 +335,8 @@
   <h1><span class="icon">🧻</span> ระบบเบิกกระดาษชำระ</h1>
   <div class="header-right">
     <div class="role-switch">
-      <button class="active" onclick="switchRole('employee')">พนักงาน</button>
-      <button onclick="switchRole('admin')">ผู้อนุมัติ</button>
+      <button class="active" id="btnEmployee">พนักงาน</button>
+      <button id="btnAdmin">🔐 ผู้อนุมัติ</button>
     </div>
     <div class="user-badge">
       <span id="userName">สมชาย ใจดี</span>
@@ -347,20 +347,20 @@
 
 <!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="showTab('request')" id="tab-request">
+  <button class="tab-btn active" id="tab-request">
     📝 ยื่นคำขอเบิก
   </button>
-  <button class="tab-btn" onclick="showTab('history')" id="tab-history">
+  <button class="tab-btn" id="tab-history">
     📋 ประวัติของฉัน
   </button>
-  <button class="tab-btn" onclick="showTab('admin')" id="tab-admin" style="display:none">
+  <button class="tab-btn" id="tab-admin" style="display:none">
     ✅ อนุมัติคำขอ
     <span class="badge" id="pendingBadge">0</span>
   </button>
-  <button class="tab-btn" onclick="showTab('stock')" id="tab-stock" style="display:none">
+  <button class="tab-btn" id="tab-stock" style="display:none">
     📦 จัดการสต็อก
   </button>
-  <button class="tab-btn" onclick="showTab('people')" id="tab-people" style="display:none">
+  <button class="tab-btn" id="tab-people" style="display:none">
     👥 จัดการรายชื่อ
   </button>
 </div>
@@ -433,7 +433,7 @@
         </div>
       </div>
       <div style="margin-top:20px; display:flex; justify-content:flex-end;">
-        <button class="btn btn-primary" onclick="submitRequest()">
+        <button class="btn btn-primary" id="btnSubmitRequest">
           📤 ส่งคำขอเบิก
         </button>
       </div>
@@ -557,14 +557,14 @@
             <label>เพิ่มสต็อก (รับของเข้า)</label>
             <div style="display:flex; gap:8px;">
               <input type="number" id="addStockQty" min="1" placeholder="จำนวนม้วน" style="flex:1">
-              <button class="btn btn-success" onclick="addStock()">+ เพิ่ม</button>
+              <button class="btn btn-success" id="btnAddStock">+ เพิ่ม</button>
             </div>
           </div>
           <div class="form-group">
             <label>ตั้งค่าสต็อกทั้งหมด</label>
             <div style="display:flex; gap:8px;">
               <input type="number" id="setStockQty" min="0" placeholder="จำนวนม้วน" style="flex:1">
-              <button class="btn btn-outline" onclick="setStock()">ตั้งค่า</button>
+              <button class="btn btn-outline" id="btnSetStock">ตั้งค่า</button>
             </div>
           </div>
         </div>
@@ -588,7 +588,7 @@
         <div class="card-title">👤 รายชื่อพนักงาน</div>
         <div style="display:flex; gap:8px; margin-bottom:16px;">
           <input type="text" id="newEmployeeName" placeholder="ชื่อ-นามสกุลพนักงาน" style="flex:1">
-          <button class="btn btn-primary" onclick="addPerson('employee')">+ เพิ่ม</button>
+          <button class="btn btn-primary" id="btnAddEmployee">+ เพิ่ม</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -607,7 +607,7 @@
         <div class="card-title">✅ รายชื่อผู้อนุมัติ</div>
         <div style="display:flex; gap:8px; margin-bottom:16px;">
           <input type="text" id="newApproverName" placeholder="ชื่อ-นามสกุลผู้อนุมัติ" style="flex:1">
-          <button class="btn btn-success" onclick="addPerson('approver')">+ เพิ่ม</button>
+          <button class="btn btn-success" id="btnAddApprover">+ เพิ่ม</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -636,8 +636,27 @@
       <textarea id="rejectReason" placeholder="ระบุเหตุผล..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">ยกเลิก</button>
-      <button class="btn" id="modalConfirmBtn" onclick="confirmAction()">ยืนยัน</button>
+      <button class="btn btn-outline" id="btnCloseModal">ยกเลิก</button>
+      <button class="btn" id="modalConfirmBtn">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADMIN PASSWORD -->
+<div class="modal-bg" id="passwordModal">
+  <div class="modal" style="width:380px;">
+    <div style="text-align:center; margin-bottom:20px;">
+      <div style="font-size:48px;">🔐</div>
+      <h3 style="margin-top:8px;">เข้าสู่โหมดผู้อนุมัติ</h3>
+      <p style="color:var(--text-muted); font-size:14px; margin-top:6px;">กรุณาใส่รหัสผ่านผู้อนุมัติ</p>
+    </div>
+    <div class="form-group">
+      <input type="password" id="adminPasswordInput" placeholder="รหัสผ่าน" style="text-align:center; font-size:18px; letter-spacing:4px;">
+    </div>
+    <div id="passwordError" style="color:var(--danger); font-size:13px; text-align:center; margin-top:8px; display:none;">❌ รหัสผ่านไม่ถูกต้อง</div>
+    <div class="modal-actions" style="justify-content:center; margin-top:20px;">
+      <button class="btn btn-outline" id="btnCancelPassword">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnConfirmPassword">🔓 เข้าสู่ระบบ</button>
     </div>
   </div>
 </div>
@@ -645,121 +664,154 @@
 <!-- TOAST -->
 <div class="toast" id="toast">✅ <span id="toastMsg"></span></div>
 
-<!-- FIREBASE SDK -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs, updateDoc, doc, onSnapshot,
-  query, orderBy, serverTimestamp, getDoc, setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<!-- FIREBASE SDK (Global/compat version - ไม่ใช้ module) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+<script>
 // ===== 🔥 FIREBASE CONFIG =====
-// TODO: แทนที่ด้วย config ของคุณจาก Firebase Console
+// TODO: แทนที่ด้วย config จริงจาก Firebase Console
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+apiKey: "AIzaSyBXR5Jr-2oaM2mrMny5iwhEMS3oQObnCbE",
+  authDomain: "tissue-f32c5.firebaseapp.com",
+  projectId: "tissue-f32c5",
+  storageBucket: "tissue-f32c5.firebasestorage.app",
+  messagingSenderId: "35578569023",
+  appId: "1:35578569023:web:a9fd5c6ff1cdc2ad36338a"
 };
-// =============================
+};
+// ==============================
 
-let db, useLocal = false;
+// 🔑 เปลี่ยนรหัสผ่านผู้อนุมัติได้ตรงนี้
+const ADMIN_PASSWORD = '1234';
+
+let db = null;
+let useLocal = false;
 
 try {
-  const app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-  // Test connection
-  await getDocs(collection(db, "test_ping"));
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
 } catch(e) {
   useLocal = true;
-  console.warn("Firebase not configured — using local demo mode");
 }
 
 // === LOCAL DEMO DATA ===
 let localRequests = [
-  { id: 'r1', name: 'สมชาย ใจดี', dept: 'IT', qty: 3, purpose: 'ใช้ในสำนักงาน', note: '', status: 'pending', createdAt: new Date(Date.now()-3600000) },
-  { id: 'r2', name: 'มาลี รักงาน', dept: 'HR', qty: 5, purpose: 'ห้องน้ำ', note: 'ขอด่วน', status: 'approved', createdAt: new Date(Date.now()-86400000), approvedAt: new Date() },
-  { id: 'r3', name: 'สมชาย ใจดี', dept: 'IT', qty: 2, purpose: 'ห้องประชุม', note: '', status: 'rejected', createdAt: new Date(Date.now()-172800000), rejectReason: 'สต็อกเหลือน้อย' },
+  { id:'r1', name:'สมชาย ใจดี', dept:'IT', qty:3, purpose:'ใช้ในสำนักงาน', note:'', status:'pending', createdAt: new Date(Date.now()-3600000) },
+  { id:'r2', name:'มาลี รักงาน', dept:'HR', qty:5, purpose:'ห้องน้ำ', note:'ขอด่วน', status:'approved', createdAt: new Date(Date.now()-86400000) },
+  { id:'r3', name:'สมชาย ใจดี', dept:'IT', qty:2, purpose:'ห้องประชุม', note:'', status:'rejected', createdAt: new Date(Date.now()-172800000), rejectReason:'สต็อกเหลือน้อย' },
 ];
-let localStock = 45;
-let localMaxStock = 100;
-let localEmployees = ['สมชาย ใจดี', 'มาลี รักงาน'];
+let localStock = 45, localMaxStock = 100;
+let localEmployees = ['สมชาย ใจดี','มาลี รักงาน'];
 let localApprovers = ['วิภา สมใจ'];
 let currentRole = 'employee';
-let currentUser = 'สมชาย ใจดี';
+let currentUser = '';
 let pendingAction = null;
 
 // === UTILS ===
 function fmtDate(d) {
   if (!d) return '-';
-  const dt = d.toDate ? d.toDate() : new Date(d);
-  return dt.toLocaleDateString('th-TH', { day:'2-digit', month:'short', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const dt = (d && d.toDate) ? d.toDate() : new Date(d);
+  return dt.toLocaleDateString('th-TH', {day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 }
 function statusBadge(s, reason='') {
-  if (s === 'pending') return `<span class="badge-status badge-pending">⏳ รออนุมัติ</span>`;
-  if (s === 'approved') return `<span class="badge-status badge-approved">✅ อนุมัติ</span>`;
-  if (s === 'rejected') return `<span class="badge-status badge-rejected" title="${reason}">❌ ไม่อนุมัติ</span>`;
+  if (s==='pending') return `<span class="badge-status badge-pending">⏳ รออนุมัติ</span>`;
+  if (s==='approved') return `<span class="badge-status badge-approved">✅ อนุมัติ</span>`;
+  if (s==='rejected') return `<span class="badge-status badge-rejected" title="${reason}">❌ ไม่อนุมัติ</span>`;
   return s;
 }
-
-window.showToast = function(msg, isError=false) {
+function showToast(msg, isError=false) {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.className = 'toast', 3000);
 }
 
-// === TABS ===
-window.showTab = function(tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'admin') renderAdmin();
-  if (tab === 'history') renderHistory();
-  if (tab === 'stock') renderStock();
-  if (tab === 'request') renderStats();
-  if (tab === 'people') renderPeople();
+// === FIREBASE HELPERS ===
+async function getRequests() {
+  if (useLocal) return localRequests;
+  try {
+    const snap = await db.collection('requests').orderBy('createdAt','desc').get();
+    return snap.docs.map(d => ({id:d.id,...d.data()}));
+  } catch { return []; }
+}
+async function getStock() {
+  if (useLocal) return {total:localStock, max:localMaxStock};
+  try {
+    const d = await db.collection('inventory').doc('stock').get();
+    return d.exists ? d.data() : {total:0, max:100};
+  } catch { return {total:0, max:100}; }
+}
+async function getPeople() {
+  if (useLocal) return {employees:localEmployees, approvers:localApprovers};
+  try {
+    const d = await db.collection('settings').doc('people').get();
+    return d.exists ? d.data() : {employees:[], approvers:[]};
+  } catch { return {employees:[], approvers:[]}; }
+}
+async function savePeople(employees, approvers) {
+  if (useLocal) { localEmployees=[...employees]; localApprovers=[...approvers]; return; }
+  await db.collection('settings').doc('people').set({employees, approvers});
 }
 
-// === ROLE SWITCH ===
-window.switchRole = function(role) {
-  currentRole = role;
-  document.querySelectorAll('.role-switch button').forEach((b,i) => {
-    b.classList.toggle('active', (i===0 && role==='employee') || (i===1 && role==='admin'));
-  });
-  // set current user from dropdown if available
-  if (role === 'employee') {
-    const sel = document.getElementById('reqName');
-    currentUser = sel?.value || localEmployees[0] || 'พนักงาน';
+// === TABS ===
+function showTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab==='admin') renderAdmin();
+  if (tab==='history') renderHistory();
+  if (tab==='stock') renderStock();
+  if (tab==='request') renderStats();
+  if (tab==='people') renderPeople();
+}
+
+// === PASSWORD & ROLE ===
+function openPasswordModal() {
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('passwordError').style.display = 'none';
+  document.getElementById('passwordModal').classList.add('open');
+  setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
+}
+function closePasswordModal() {
+  document.getElementById('passwordModal').classList.remove('open');
+}
+function confirmPassword() {
+  if (document.getElementById('adminPasswordInput').value === ADMIN_PASSWORD) {
+    closePasswordModal();
+    doSwitchToAdmin();
   } else {
-    currentUser = localApprovers[0] || 'ผู้อนุมัติ';
+    document.getElementById('passwordError').style.display = 'block';
+    document.getElementById('adminPasswordInput').value = '';
   }
-  document.getElementById('roleTag').textContent = role === 'admin' ? 'ผู้อนุมัติ' : 'พนักงาน';
+}
+function doSwitchToAdmin() {
+  currentRole = 'admin';
+  getPeople().then(p => { currentUser = p.approvers[0] || 'ผู้อนุมัติ'; document.getElementById('userName').textContent = currentUser; });
+  document.getElementById('roleTag').textContent = 'ผู้อนุมัติ';
+  document.getElementById('btnEmployee').classList.remove('active');
+  document.getElementById('btnAdmin').classList.add('active');
+  document.getElementById('btnAdmin').textContent = '✅ ผู้อนุมัติ';
+  ['tab-admin','tab-stock','tab-people'].forEach(id => document.getElementById(id).style.display = '');
+  showToast('ยินดีต้อนรับสู่โหมดผู้อนุมัติ 🔓');
+  showTab('admin');
+}
+function switchToEmployee() {
+  currentRole = 'employee';
+  const sel = document.getElementById('reqName');
+  currentUser = sel.value || localEmployees[0] || '';
+  document.getElementById('roleTag').textContent = 'พนักงาน';
   document.getElementById('userName').textContent = currentUser;
-  document.getElementById('tab-admin').style.display = role === 'admin' ? '' : 'none';
-  document.getElementById('tab-stock').style.display = role === 'admin' ? '' : 'none';
-  document.getElementById('tab-people').style.display = role === 'admin' ? '' : 'none';
+  document.getElementById('btnEmployee').classList.add('active');
+  document.getElementById('btnAdmin').classList.remove('active');
+  document.getElementById('btnAdmin').textContent = '🔐 ผู้อนุมัติ';
+  ['tab-admin','tab-stock','tab-people'].forEach(id => document.getElementById(id).style.display = 'none');
   showTab('request');
 }
 
-// === GET / SAVE PEOPLE ===
-async function getPeople() {
-  if (useLocal) return { employees: localEmployees, approvers: localApprovers };
-  try {
-    const d = await getDoc(doc(db, 'settings', 'people'));
-    return d.exists() ? d.data() : { employees: [], approvers: [] };
-  } catch { return { employees: [], approvers: [] }; }
-}
-async function savePeople(employees, approvers) {
-  if (useLocal) { localEmployees = employees; localApprovers = approvers; return; }
-  await setDoc(doc(db, 'settings', 'people'), { employees, approvers });
-}
-
-function populateDropdowns(employees, approvers) {
-  // Employee dropdown in request form
+// === DROPDOWNS ===
+function populateDropdowns(employees) {
   const sel = document.getElementById('reqName');
   const prev = sel.value;
   sel.innerHTML = '<option value="">-- เลือกชื่อพนักงาน --</option>';
@@ -769,93 +821,16 @@ function populateDropdowns(employees, approvers) {
     if (n === prev) o.selected = true;
     sel.appendChild(o);
   });
-  // Approver dropdown in header (role switch)
-  // Update currentUser if role matches
-  if (currentRole === 'employee' && employees.length) {
-    if (!sel.value) sel.value = employees[0];
-    currentUser = sel.value;
-    document.getElementById('userName').textContent = currentUser;
-  }
-  if (currentRole === 'admin' && approvers.length) {
-    currentUser = approvers[0];
-    document.getElementById('userName').textContent = currentUser;
-  }
-}
-
-// === RENDER PEOPLE PAGE ===
-async function renderPeople() {
-  const { employees, approvers } = await getPeople();
-  populateDropdowns(employees, approvers);
-
-  // Employee table
-  const et = document.getElementById('employeeList');
-  et.innerHTML = employees.length ? employees.map((n,i) => `
-    <tr>
-      <td style="color:var(--text-muted);font-weight:700">${i+1}</td>
-      <td>${n}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deletePerson('employee',${i})">ลบ</button></td>
-    </tr>
-  `).join('') : `<tr><td colspan="3"><div class="empty"><div class="icon">👤</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
-
-  // Approver table
-  const at = document.getElementById('approverList');
-  at.innerHTML = approvers.length ? approvers.map((n,i) => `
-    <tr>
-      <td style="color:var(--text-muted);font-weight:700">${i+1}</td>
-      <td>${n}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deletePerson('approver',${i})">ลบ</button></td>
-    </tr>
-  `).join('') : `<tr><td colspan="3"><div class="empty"><div class="icon">✅</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
-}
-
-window.addPerson = async function(type) {
-  const inputId = type === 'employee' ? 'newEmployeeName' : 'newApproverName';
-  const name = document.getElementById(inputId).value.trim();
-  if (!name) { showToast('กรุณาระบุชื่อ', true); return; }
-
-  const { employees, approvers } = await getPeople();
-  if (type === 'employee') {
-    if (employees.includes(name)) { showToast('มีชื่อนี้อยู่แล้ว', true); return; }
-    employees.push(name);
-  } else {
-    if (approvers.includes(name)) { showToast('มีชื่อนี้อยู่แล้ว', true); return; }
-    approvers.push(name);
-  }
-  await savePeople(employees, approvers);
-  document.getElementById(inputId).value = '';
-  showToast(`เพิ่ม "${name}" เรียบร้อยแล้ว ✅`);
-  renderPeople();
-}
-
-window.deletePerson = async function(type, index) {
-  const { employees, approvers } = await getPeople();
-  if (type === 'employee') employees.splice(index, 1);
-  else approvers.splice(index, 1);
-  await savePeople(employees, approvers);
-  showToast('ลบรายชื่อเรียบร้อยแล้ว');
-  renderPeople();
-}
-
-// === GET REQUESTS ===
-async function getRequests() {
-  if (useLocal) return localRequests;
-  const snap = await getDocs(query(collection(db, 'requests'), orderBy('createdAt','desc')));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-async function getStock() {
-  if (useLocal) return { total: localStock, max: localMaxStock };
-  try {
-    const d = await getDoc(doc(db, 'inventory', 'stock'));
-    return d.exists() ? d.data() : { total: 0, max: 100 };
-  } catch { return { total: 0, max: 100 }; }
+  if (!prev && employees.length) sel.value = employees[0];
+  currentUser = sel.value;
+  document.getElementById('userName').textContent = currentUser;
 }
 
 // === RENDER STATS ===
 async function renderStats() {
   const [reqs, stk, people] = await Promise.all([getRequests(), getStock(), getPeople()]);
-  populateDropdowns(people.employees, people.approvers);
-  const sel = document.getElementById('reqName');
-  const myName = sel.value || currentUser;
+  populateDropdowns(people.employees);
+  const myName = document.getElementById('reqName').value;
   const mine = reqs.filter(r => r.name === myName);
   document.getElementById('statStock').textContent = stk.total;
   document.getElementById('statMyPending').textContent = mine.filter(r=>r.status==='pending').length;
@@ -864,29 +839,25 @@ async function renderStats() {
 }
 
 // === SUBMIT REQUEST ===
-window.submitRequest = async function() {
-  const name = document.getElementById('reqName').value.trim();
+async function submitRequest() {
+  const name = document.getElementById('reqName').value;
   const dept = document.getElementById('reqDept').value;
   const qty = parseInt(document.getElementById('reqQty').value);
   const purpose = document.getElementById('reqPurpose').value;
   const note = document.getElementById('reqNote').value.trim();
-
   if (!name) { showToast('กรุณาเลือกชื่อพนักงาน', true); return; }
   if (!dept || !qty || !purpose) { showToast('กรุณากรอกข้อมูลให้ครบ', true); return; }
-  if (qty < 1 || qty > 50) { showToast('จำนวนต้องอยู่ระหว่าง 1-50 ม้วน', true); return; }
-
-  const data = { name: name||currentUser, dept, qty, purpose, note, status: 'pending', createdAt: new Date() };
-
+  if (qty<1||qty>50) { showToast('จำนวนต้องอยู่ระหว่าง 1-50 ม้วน', true); return; }
+  const data = {name, dept, qty, purpose, note, status:'pending', createdAt: new Date()};
   if (useLocal) {
-    localRequests.unshift({ ...data, id: 'r' + Date.now() });
+    localRequests.unshift({...data, id:'r'+Date.now()});
   } else {
-    await addDoc(collection(db, 'requests'), { ...data, createdAt: serverTimestamp() });
+    await db.collection('requests').add({...data, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
   }
-
-  document.getElementById('reqDept').value = '';
-  document.getElementById('reqQty').value = '1';
-  document.getElementById('reqPurpose').value = '';
-  document.getElementById('reqNote').value = '';
+  document.getElementById('reqDept').value='';
+  document.getElementById('reqQty').value='1';
+  document.getElementById('reqPurpose').value='';
+  document.getElementById('reqNote').value='';
   showToast('ส่งคำขอเบิกเรียบร้อยแล้ว 📤');
   renderStats();
   updatePendingBadge();
@@ -895,13 +866,11 @@ window.submitRequest = async function() {
 // === RENDER HISTORY ===
 async function renderHistory() {
   const reqs = await getRequests();
-  const mine = reqs.filter(r => r.name === currentUser);
+  const myName = document.getElementById('reqName').value || currentUser;
+  const mine = reqs.filter(r => r.name === myName);
   const tbody = document.getElementById('historyBody');
-  if (!mine.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="icon">📭</div><p>ยังไม่มีประวัติคำขอ</p></div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = mine.map((r, i) => `
+  if (!mine.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="icon">📭</div><p>ยังไม่มีประวัติคำขอ</p></div></td></tr>`; return; }
+  tbody.innerHTML = mine.map((r,i) => `
     <tr>
       <td style="font-weight:700;color:var(--text-muted)">${i+1}</td>
       <td>${fmtDate(r.createdAt)}</td>
@@ -909,269 +878,246 @@ async function renderHistory() {
       <td>${r.dept}</td>
       <td>${r.purpose}</td>
       <td>${statusBadge(r.status, r.rejectReason)}</td>
-      <td style="color:var(--text-muted);font-size:13px">${r.rejectReason ? '❌ '+r.rejectReason : r.note || '-'}</td>
-    </tr>
-  `).join('');
+      <td style="color:var(--text-muted);font-size:13px">${r.rejectReason?'❌ '+r.rejectReason:r.note||'-'}</td>
+    </tr>`).join('');
 }
 
 // === RENDER ADMIN ===
 async function renderAdmin() {
   const [reqs, stk] = await Promise.all([getRequests(), getStock()]);
-  const pending = reqs.filter(r => r.status === 'pending');
-  const approved = reqs.filter(r => r.status === 'approved');
-  const totalOut = approved.reduce((s,r) => s + (r.qty||0), 0);
-
+  const pending = reqs.filter(r=>r.status==='pending');
+  const approved = reqs.filter(r=>r.status==='approved');
+  const totalOut = approved.reduce((s,r)=>s+(r.qty||0),0);
   document.getElementById('adminPending').textContent = pending.length;
-  document.getElementById('adminApproved').textContent = approved.filter(r => {
-    const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
-    return d.toDateString() === new Date().toDateString();
+  document.getElementById('adminApproved').textContent = approved.filter(r=>{
+    const d=(r.createdAt?.toDate?r.createdAt.toDate():new Date(r.createdAt));
+    return d.toDateString()===new Date().toDateString();
   }).length;
   document.getElementById('adminStock').textContent = stk.total;
   document.getElementById('adminTotalOut').textContent = totalOut;
 
-  // Pending table
   const pb = document.getElementById('pendingBody');
-  if (!pending.length) {
-    pb.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="icon">✨</div><p>ไม่มีคำขอที่รออนุมัติ</p></div></td></tr>`;
-  } else {
-    pb.innerHTML = pending.map((r, i) => `
-      <tr>
-        <td style="font-weight:700;color:var(--text-muted)">${i+1}</td>
-        <td>${fmtDate(r.createdAt)}</td>
-        <td><strong>${r.name}</strong></td>
-        <td>${r.dept}</td>
-        <td><strong>${r.qty}</strong> ม้วน</td>
-        <td>${r.purpose}</td>
-        <td style="color:var(--text-muted);font-size:13px">${r.note||'-'}</td>
-        <td>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-success btn-sm" onclick="openModal('approve','${r.id}','${r.name}',${r.qty})">✅ อนุมัติ</button>
-            <button class="btn btn-danger btn-sm" onclick="openModal('reject','${r.id}','${r.name}',${r.qty})">❌ ปฏิเสธ</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
-  }
+  pb.innerHTML = pending.length ? pending.map((r,i)=>`
+    <tr>
+      <td style="font-weight:700;color:var(--text-muted)">${i+1}</td>
+      <td>${fmtDate(r.createdAt)}</td>
+      <td><strong>${r.name}</strong></td>
+      <td>${r.dept}</td>
+      <td><strong>${r.qty}</strong> ม้วน</td>
+      <td>${r.purpose}</td>
+      <td style="color:var(--text-muted);font-size:13px">${r.note||'-'}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-success btn-sm" onclick="openModal('approve','${r.id}','${r.name}',${r.qty})">✅ อนุมัติ</button>
+          <button class="btn btn-danger btn-sm" onclick="openModal('reject','${r.id}','${r.name}',${r.qty})">❌ ปฏิเสธ</button>
+        </div>
+      </td>
+    </tr>`).join('') : `<tr><td colspan="8"><div class="empty"><div class="icon">✨</div><p>ไม่มีคำขอที่รออนุมัติ</p></div></td></tr>`;
 
-  // All history
+  const done = reqs.filter(r=>r.status!=='pending');
   const ah = document.getElementById('allHistoryBody');
-  const done = reqs.filter(r => r.status !== 'pending');
-  if (!done.length) {
-    ah.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="icon">📭</div><p>ยังไม่มีประวัติ</p></div></td></tr>`;
-  } else {
-    ah.innerHTML = done.map((r, i) => `
-      <tr>
-        <td style="font-weight:700;color:var(--text-muted)">${i+1}</td>
-        <td>${fmtDate(r.createdAt)}</td>
-        <td>${r.name}</td>
-        <td>${r.dept}</td>
-        <td>${r.qty} ม้วน</td>
-        <td>${statusBadge(r.status, r.rejectReason)}</td>
-      </tr>
-    `).join('');
-  }
+  ah.innerHTML = done.length ? done.map((r,i)=>`
+    <tr>
+      <td style="font-weight:700;color:var(--text-muted)">${i+1}</td>
+      <td>${fmtDate(r.createdAt)}</td>
+      <td>${r.name}</td>
+      <td>${r.dept}</td>
+      <td>${r.qty} ม้วน</td>
+      <td>${statusBadge(r.status, r.rejectReason)}</td>
+    </tr>`).join('') : `<tr><td colspan="6"><div class="empty"><div class="icon">📭</div><p>ยังไม่มีประวัติ</p></div></td></tr>`;
 
   updatePendingBadge(pending.length);
 }
 
-// === RENDER STOCK ===
-async function renderStock() {
-  const [reqs, stk] = await Promise.all([getRequests(), getStock()]);
-  const total = stk.total;
-  const max = stk.max || 100;
-  document.getElementById('stockDisplay').textContent = total;
-  document.getElementById('stockMax').textContent = max + ' ม้วน (เต็ม)';
-  const pct = Math.min(100, Math.round(total/max*100));
-  const fill = document.getElementById('stockFill');
-  fill.style.width = pct + '%';
-  fill.className = 'stock-fill' + (pct < 20 ? ' low' : pct < 50 ? ' medium' : '');
-
-  // Dept summary
-  const approved = reqs.filter(r => r.status === 'approved');
-  const deptMap = {};
-  approved.forEach(r => { deptMap[r.dept] = (deptMap[r.dept]||0) + r.qty; });
-  const sorted = Object.entries(deptMap).sort((a,b)=>b[1]-a[1]);
-  const maxQty = sorted[0]?.[1] || 1;
-  const ds = document.getElementById('deptSummary');
-  if (!sorted.length) {
-    ds.innerHTML = `<div class="empty"><div class="icon">📊</div><p>ยังไม่มีข้อมูล</p></div>`;
-    return;
-  }
-  ds.innerHTML = sorted.map(([dept, qty]) => `
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-      <div style="width:80px; font-size:14px; font-weight:600;">${dept}</div>
-      <div style="flex:1; background:var(--border); border-radius:6px; height:10px; overflow:hidden;">
-        <div style="width:${Math.round(qty/maxQty*100)}%; height:100%; background:var(--primary-light); border-radius:6px;"></div>
-      </div>
-      <div style="width:60px; text-align:right; font-size:14px; font-weight:700; color:var(--primary);">${qty} ม้วน</div>
-    </div>
-  `).join('');
-}
-
-// === MODAL ===
-window.openModal = function(action, id, name, qty) {
-  pendingAction = { action, id, qty };
-  const modal = document.getElementById('actionModal');
+// === MODAL APPROVE/REJECT ===
+function openModal(action, id, name, qty) {
+  pendingAction = {action, id, qty};
   const rg = document.getElementById('rejectReasonGroup');
   const btn = document.getElementById('modalConfirmBtn');
   document.getElementById('rejectReason').value = '';
-
-  if (action === 'approve') {
+  if (action==='approve') {
     document.getElementById('modalTitle').textContent = '✅ ยืนยันการอนุมัติ';
-    document.getElementById('modalDesc').textContent = `อนุมัติคำขอของ "${name}" จำนวน ${qty} ม้วน\nระบบจะตัดสต็อกอัตโนมัติ`;
-    rg.style.display = 'none';
-    btn.className = 'btn btn-success';
-    btn.textContent = 'อนุมัติ';
+    document.getElementById('modalDesc').textContent = `อนุมัติคำขอของ "${name}" จำนวน ${qty} ม้วน`;
+    rg.style.display='none'; btn.className='btn btn-success'; btn.textContent='อนุมัติ';
   } else {
     document.getElementById('modalTitle').textContent = '❌ ยืนยันการปฏิเสธ';
     document.getElementById('modalDesc').textContent = `ปฏิเสธคำขอของ "${name}" จำนวน ${qty} ม้วน`;
-    rg.style.display = '';
-    btn.className = 'btn btn-danger';
-    btn.textContent = 'ปฏิเสธ';
+    rg.style.display=''; btn.className='btn btn-danger'; btn.textContent='ปฏิเสธ';
   }
-  modal.classList.add('open');
+  document.getElementById('actionModal').classList.add('open');
 }
-window.closeModal = function() {
-  document.getElementById('actionModal').classList.remove('open');
-  pendingAction = null;
-}
-
-window.confirmAction = async function() {
+function closeModal() { document.getElementById('actionModal').classList.remove('open'); pendingAction=null; }
+async function confirmAction() {
   if (!pendingAction) return;
-  const { action, id, qty } = pendingAction;
+  const {action, id, qty} = pendingAction;
   const rejectReason = document.getElementById('rejectReason').value.trim();
-
-  if (action === 'reject' && !rejectReason) { showToast('กรุณาระบุเหตุผล', true); return; }
-
+  if (action==='reject' && !rejectReason) { showToast('กรุณาระบุเหตุผล', true); return; }
   if (useLocal) {
-    const req = localRequests.find(r => r.id === id);
-    if (req) {
-      req.status = action === 'approve' ? 'approved' : 'rejected';
-      if (action === 'approve') localStock = Math.max(0, localStock - qty);
-      if (action === 'reject') req.rejectReason = rejectReason;
-    }
+    const req = localRequests.find(r=>r.id===id);
+    if (req) { req.status=action==='approve'?'approved':'rejected'; if(action==='reject') req.rejectReason=rejectReason; if(action==='approve') localStock=Math.max(0,localStock-qty); }
   } else {
-    await updateDoc(doc(db,'requests',id), {
-      status: action === 'approve' ? 'approved' : 'rejected',
-      ...(action === 'reject' ? { rejectReason } : {}),
-      processedAt: serverTimestamp(),
-      processedBy: currentUser,
+    await db.collection('requests').doc(id).update({
+      status: action==='approve'?'approved':'rejected',
+      ...(action==='reject'?{rejectReason}:{}),
+      processedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    if (action === 'approve') {
-      const stk = await getDoc(doc(db,'inventory','stock'));
-      const cur = stk.exists() ? stk.data().total : 0;
-      await setDoc(doc(db,'inventory','stock'), { total: Math.max(0, cur - qty), max: stk.data()?.max || 100 });
+    if (action==='approve') {
+      const stk = await db.collection('inventory').doc('stock').get();
+      const cur = stk.exists ? stk.data().total : 0;
+      await db.collection('inventory').doc('stock').set({total:Math.max(0,cur-qty), max:stk.data()?.max||100});
     }
   }
-
   closeModal();
-  showToast(action === 'approve' ? '✅ อนุมัติคำขอเรียบร้อยแล้ว' : '❌ ปฏิเสธคำขอเรียบร้อยแล้ว');
+  showToast(action==='approve'?'✅ อนุมัติเรียบร้อยแล้ว':'❌ ปฏิเสธเรียบร้อยแล้ว');
   renderAdmin();
 }
 
-// === STOCK MANAGEMENT ===
-window.addStock = async function() {
+// === STOCK ===
+async function renderStock() {
+  const [reqs, stk] = await Promise.all([getRequests(), getStock()]);
+  const total=stk.total, max=stk.max||100;
+  document.getElementById('stockDisplay').textContent = total;
+  document.getElementById('stockMax').textContent = max+' ม้วน (เต็ม)';
+  const pct = Math.min(100, Math.round(total/max*100));
+  const fill = document.getElementById('stockFill');
+  fill.style.width = pct+'%';
+  fill.className = 'stock-fill'+(pct<20?' low':pct<50?' medium':'');
+  const approved = reqs.filter(r=>r.status==='approved');
+  const deptMap = {};
+  approved.forEach(r=>{ deptMap[r.dept]=(deptMap[r.dept]||0)+r.qty; });
+  const sorted = Object.entries(deptMap).sort((a,b)=>b[1]-a[1]);
+  const maxQty = sorted[0]?.[1]||1;
+  const ds = document.getElementById('deptSummary');
+  ds.innerHTML = sorted.length ? sorted.map(([dept,qty])=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:80px;font-size:14px;font-weight:600;">${dept}</div>
+      <div style="flex:1;background:var(--border);border-radius:6px;height:10px;overflow:hidden;">
+        <div style="width:${Math.round(qty/maxQty*100)}%;height:100%;background:var(--primary-light);border-radius:6px;"></div>
+      </div>
+      <div style="width:60px;text-align:right;font-size:14px;font-weight:700;color:var(--primary);">${qty} ม้วน</div>
+    </div>`).join('') : `<div class="empty"><div class="icon">📊</div><p>ยังไม่มีข้อมูล</p></div>`;
+}
+async function addStock() {
   const add = parseInt(document.getElementById('addStockQty').value);
-  if (!add || add < 1) { showToast('กรุณาระบุจำนวนที่ถูกต้อง', true); return; }
-  if (useLocal) { localStock += add; }
-  else {
-    const stk = await getDoc(doc(db,'inventory','stock'));
-    const cur = stk.exists() ? stk.data().total : 0;
-    await setDoc(doc(db,'inventory','stock'), { total: cur + add, max: stk.data()?.max || 100 });
-  }
-  document.getElementById('addStockQty').value = '';
+  if (!add||add<1) { showToast('กรุณาระบุจำนวน', true); return; }
+  if (useLocal) { localStock+=add; }
+  else { const stk=await db.collection('inventory').doc('stock').get(); const cur=stk.exists?stk.data().total:0; await db.collection('inventory').doc('stock').set({total:cur+add, max:stk.data()?.max||100}); }
+  document.getElementById('addStockQty').value='';
   showToast(`เพิ่มสต็อก ${add} ม้วนเรียบร้อย 📦`);
   renderStock();
 }
-
-window.setStock = async function() {
+async function setStock() {
   const val = parseInt(document.getElementById('setStockQty').value);
-  if (isNaN(val) || val < 0) { showToast('กรุณาระบุจำนวนที่ถูกต้อง', true); return; }
-  if (useLocal) { localStock = val; localMaxStock = Math.max(val, localMaxStock); }
-  else {
-    const stk = await getDoc(doc(db,'inventory','stock'));
-    await setDoc(doc(db,'inventory','stock'), { total: val, max: Math.max(val, stk.data()?.max || 100) });
-  }
-  document.getElementById('setStockQty').value = '';
+  if (isNaN(val)||val<0) { showToast('กรุณาระบุจำนวน', true); return; }
+  if (useLocal) { localStock=val; localMaxStock=Math.max(val,localMaxStock); }
+  else { const stk=await db.collection('inventory').doc('stock').get(); await db.collection('inventory').doc('stock').set({total:val, max:Math.max(val,stk.data()?.max||100)}); }
+  document.getElementById('setStockQty').value='';
   showToast(`ตั้งค่าสต็อกเป็น ${val} ม้วนเรียบร้อย`);
   renderStock();
 }
 
+// === PEOPLE ===
+async function renderPeople() {
+  const {employees, approvers} = await getPeople();
+  populateDropdowns(employees);
+  document.getElementById('employeeList').innerHTML = employees.length ? employees.map((n,i)=>`
+    <tr><td style="color:var(--text-muted);font-weight:700">${i+1}</td><td>${n}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deletePerson('employee',${i})">ลบ</button></td></tr>`).join('')
+    : `<tr><td colspan="3"><div class="empty"><div class="icon">👤</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
+  document.getElementById('approverList').innerHTML = approvers.length ? approvers.map((n,i)=>`
+    <tr><td style="color:var(--text-muted);font-weight:700">${i+1}</td><td>${n}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deletePerson('approver',${i})">ลบ</button></td></tr>`).join('')
+    : `<tr><td colspan="3"><div class="empty"><div class="icon">✅</div><p>ยังไม่มีรายชื่อ</p></div></td></tr>`;
+}
+async function addPerson(type) {
+  const inputId = type==='employee'?'newEmployeeName':'newApproverName';
+  const name = document.getElementById(inputId).value.trim();
+  if (!name) { showToast('กรุณาระบุชื่อ', true); return; }
+  const {employees, approvers} = await getPeople();
+  if (type==='employee') { if(employees.includes(name)){showToast('มีชื่อนี้อยู่แล้ว',true);return;} employees.push(name); }
+  else { if(approvers.includes(name)){showToast('มีชื่อนี้อยู่แล้ว',true);return;} approvers.push(name); }
+  await savePeople(employees, approvers);
+  document.getElementById(inputId).value='';
+  showToast(`เพิ่ม "${name}" เรียบร้อยแล้ว ✅`);
+  renderPeople();
+}
+async function deletePerson(type, index) {
+  const {employees, approvers} = await getPeople();
+  if (type==='employee') employees.splice(index,1); else approvers.splice(index,1);
+  await savePeople(employees, approvers);
+  showToast('ลบรายชื่อเรียบร้อยแล้ว');
+  renderPeople();
+}
+
+// === PENDING BADGE ===
 async function updatePendingBadge(count) {
-  if (count === undefined) {
-    const reqs = await getRequests();
-    count = reqs.filter(r=>r.status==='pending').length;
-  }
+  if (count===undefined) { const reqs=await getRequests(); count=reqs.filter(r=>r.status==='pending').length; }
   document.getElementById('pendingBadge').textContent = count;
-  document.getElementById('pendingBadge').style.display = count > 0 ? '' : 'none';
+  document.getElementById('pendingBadge').style.display = count>0?'':'none';
 }
 
 // === EXPORT EXCEL ===
-window.exportExcel = async function() {
+async function exportExcel() {
   const reqs = await getRequests();
   const stk = await getStock();
-
-  if (!reqs.length) { showToast('ยังไม่มีข้อมูลให้ Export', true); return; }
-
-  const statusTh = { pending: 'รออนุมัติ', approved: 'อนุมัติแล้ว', rejected: 'ไม่อนุมัติ' };
-
-  // Build CSV with BOM for Thai support in Excel
+  if (!reqs.length) { showToast('ยังไม่มีข้อมูล', true); return; }
+  const statusTh = {pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ'};
   const BOM = '\uFEFF';
-  const headers = ['#', 'วันที่', 'ชื่อผู้เบิก', 'แผนก', 'จำนวน (ม้วน)', 'วัตถุประสงค์', 'สถานะ', 'เหตุผลที่ไม่อนุมัติ', 'หมายเหตุ'];
-
-  const rows = reqs.map((r, i) => {
-    const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
-    const dateStr = d.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    return [
-      i + 1,
-      dateStr,
-      r.name || '',
-      r.dept || '',
-      r.qty || 0,
-      r.purpose || '',
-      statusTh[r.status] || r.status,
-      r.rejectReason || '',
-      r.note || ''
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+  const headers = ['#','วันที่','ชื่อผู้เบิก','แผนก','จำนวน (ม้วน)','วัตถุประสงค์','สถานะ','เหตุผลที่ไม่อนุมัติ','หมายเหตุ'];
+  const rows = reqs.map((r,i) => {
+    const d=(r.createdAt?.toDate?r.createdAt.toDate():new Date(r.createdAt));
+    const dateStr=d.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return [i+1,dateStr,r.name||'',r.dept||'',r.qty||0,r.purpose||'',statusTh[r.status]||r.status,r.rejectReason||'',r.note||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
   });
-
-  // Summary rows
-  const approved = reqs.filter(r => r.status === 'approved');
-  const totalOut = approved.reduce((s, r) => s + (r.qty || 0), 0);
-  const summaryRows = [
-    '',
-    '"สรุป"',
-    `"สต็อกคงเหลือ","${stk.total} ม้วน"`,
-    `"เบิกออกทั้งหมด","${totalOut} ม้วน"`,
-    `"คำขอทั้งหมด","${reqs.length} รายการ"`,
-    `"รออนุมัติ","${reqs.filter(r=>r.status==='pending').length} รายการ"`,
-    `"อนุมัติแล้ว","${approved.length} รายการ"`,
-    `"ไม่อนุมัติ","${reqs.filter(r=>r.status==='rejected').length} รายการ"`,
-  ];
-
-  const csv = BOM + [headers.map(h=>`"${h}"`).join(','), ...rows, ...summaryRows].join('\n');
-
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const approved=reqs.filter(r=>r.status==='approved');
+  const totalOut=approved.reduce((s,r)=>s+(r.qty||0),0);
+  const summary=['','"สรุป"',`"สต็อกคงเหลือ","${stk.total} ม้วน"`,`"เบิกออกทั้งหมด","${totalOut} ม้วน"`,`"คำขอทั้งหมด","${reqs.length} รายการ"`];
+  const csv = BOM + [headers.map(h=>`"${h}"`).join(','),...rows,...summary].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const today = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\//g,'-');
-  a.href = url;
-  a.download = `รายงานเบิกกระดาษชำระ_${today}.csv`;
-  a.click();
+  a.href=url; a.download=`รายงานเบิกกระดาษชำระ_${new Date().toLocaleDateString('th-TH').replace(/\//g,'-')}.csv`; a.click();
   URL.revokeObjectURL(url);
-  showToast('📥 Export สำเร็จ! เปิดด้วย Excel ได้เลย');
+  showToast('📥 Export สำเร็จ!');
 }
 
 // === INIT ===
-renderStats();
-updatePendingBadge();
-
 if (useLocal) {
   const banner = document.createElement('div');
   banner.style.cssText = 'background:#fff3cd;color:#856404;padding:8px 32px;font-size:13px;font-weight:600;text-align:center;border-bottom:1px solid #ffc107;';
-  banner.innerHTML = '⚠️ โหมดตัวอย่าง (Demo) — ข้อมูลจะหายเมื่อรีเฟรช &nbsp;|&nbsp; กรุณาใส่ Firebase Config จริงในโค้ดเพื่อบันทึกข้อมูลถาวร';
+  banner.innerHTML = '⚠️ โหมดตัวอย่าง (Demo) — กรุณาใส่ Firebase Config จริงเพื่อบันทึกข้อมูลถาวร';
   document.body.insertBefore(banner, document.querySelector('header'));
 }
+
+// Bind tabs
+document.getElementById('tab-request').onclick = () => showTab('request');
+document.getElementById('tab-history').onclick = () => showTab('history');
+document.getElementById('tab-admin').onclick = () => showTab('admin');
+document.getElementById('tab-stock').onclick = () => showTab('stock');
+document.getElementById('tab-people').onclick = () => showTab('people');
+// Role
+document.getElementById('btnEmployee').onclick = switchToEmployee;
+document.getElementById('btnAdmin').onclick = openPasswordModal;
+// Password modal
+document.getElementById('btnCancelPassword').onclick = closePasswordModal;
+document.getElementById('btnConfirmPassword').onclick = confirmPassword;
+document.getElementById('adminPasswordInput').onkeydown = e => { if(e.key==='Enter') confirmPassword(); };
+// Submit
+document.getElementById('btnSubmitRequest').onclick = submitRequest;
+// Stock
+document.getElementById('btnAddStock').onclick = addStock;
+document.getElementById('btnSetStock').onclick = setStock;
+// People
+document.getElementById('btnAddEmployee').onclick = () => addPerson('employee');
+document.getElementById('btnAddApprover').onclick = () => addPerson('approver');
+document.getElementById('newEmployeeName').onkeydown = e => { if(e.key==='Enter') addPerson('employee'); };
+document.getElementById('newApproverName').onkeydown = e => { if(e.key==='Enter') addPerson('approver'); };
+// Modal
+document.getElementById('btnCloseModal').onclick = closeModal;
+document.getElementById('modalConfirmBtn').onclick = confirmAction;
+
+renderStats();
+updatePendingBadge();
 </script>
 
 </body>
